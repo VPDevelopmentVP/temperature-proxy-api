@@ -1,0 +1,61 @@
+{{- if .Values.monitoring.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: {{ .Values.monitoring.namespace }}
+  labels:
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: {{ .Values.monitoring.prometheus.scrapeInterval }}
+      evaluation_interval: {{ .Values.monitoring.prometheus.scrapeInterval }}
+
+    scrape_configs:
+
+      # ── Kubernetes pod discovery ───────────────────────────────────────────
+      # Prometheus calls the k8s API (via the ServiceAccount token) to list all
+      # pods, then the relabel_configs filter and configure each target using
+      # the annotations set on the pod template in deployment.yaml.
+      - job_name: kubernetes-pods
+        kubernetes_sd_configs:
+          - role: pod
+
+        relabel_configs:
+          # 1. Drop any pod that hasn't opted in with prometheus.io/scrape: "true"
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+            action: keep
+            regex: "true"
+
+          # 2. Use prometheus.io/path as the metrics endpoint (default: /metrics)
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+            action: replace
+            target_label: __metrics_path__
+            regex: (.+)
+
+          # 3. Build the target address as podIP:annotationPort
+          #    Regex captures IP from __address__ and port from the annotation
+          - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+            action: replace
+            regex: '([^:]+)(?::\d+)?;(\d+)'
+            replacement: '$1:$2'
+            target_label: __address__
+
+          # 4. Copy pod labels (e.g. app.kubernetes.io/name) into metric labels
+          - action: labelmap
+            regex: __meta_kubernetes_pod_label_(.+)
+
+          # 5. Add namespace and pod name for easy filtering in Grafana
+          - source_labels: [__meta_kubernetes_namespace]
+            action: replace
+            target_label: namespace
+          - source_labels: [__meta_kubernetes_pod_name]
+            action: replace
+            target_label: pod
+
+      # ── Prometheus self-monitoring ─────────────────────────────────────────
+      - job_name: prometheus
+        static_configs:
+          - targets: [localhost:9090]
+{{- end }}

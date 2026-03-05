@@ -1,0 +1,160 @@
+{
+  "info": {
+    "_postman_id": "a96f85b6-ba1c-4e0d-a8f4-355bddf5ef27",
+    "name": "Temperature Proxy API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "29942080"
+  },
+  "item": [
+    {
+      "name": "Current temperature [Warsaw]",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "localhost:8080/api/v1/temperature?lat=52.2298&lon=21.0118",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "temperature"
+          ],
+          "query": [
+            {
+              "key": "lat",
+              "value": "52.2298"
+            },
+            {
+              "key": "lon",
+              "value": "21.0118"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Current temperature [Berlin]",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "localhost:8080/api/v1/temperature?lat=52.2298&lon=21.0118",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "temperature"
+          ],
+          "query": [
+            {
+              "key": "lat",
+              "value": "52.2298"
+            },
+            {
+              "key": "lon",
+              "value": "21.0118"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Current temperature [Tokyo]",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "localhost:8080/api/v1/temperature?lat=52.2298&lon=21.0118",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "temperature"
+          ],
+          "query": [
+            {
+              "key": "lat",
+              "value": "52.2298"
+            },
+            {
+              "key": "lon",
+              "value": "21.0118"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Current temperature [Sydney]",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "localhost:8080/api/v1/temperature?lat=52.2298&lon=21.0118",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "temperature"
+          ],
+          "query": [
+            {
+              "key": "lat",
+              "value": "52.2298"
+            },
+            {
+              "key": "lon",
+              "value": "21.0118"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Current temperature [Antarctica]",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "localhost:8080/api/v1/temperature?lat=52.2298&lon=21.0118",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "temperature"
+          ],
+          "query": [
+            {
+              "key": "lat",
+              "value": "52.2298"
+            },
+            {
+              "key": "lon",
+              "value": "21.0118"
+            }
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

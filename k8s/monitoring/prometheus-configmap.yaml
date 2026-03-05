@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: monitoring
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+
+    scrape_configs:
+
+      # ── Kubernetes pod discovery ─────────────────────────────────────────────
+      # Prometheus calls the k8s API to get the list of all pods, then filters
+      # and configures each target using the pod's own annotations.
+      - job_name: kubernetes-pods
+        kubernetes_sd_configs:
+          - role: pod
+
+        relabel_configs:
+          # 1. Only scrape pods that opted in with: prometheus.io/scrape: "true"
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+            action: keep
+            regex: "true"
+
+          # 2. Use prometheus.io/path annotation as the metrics path (default: /metrics)
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+            action: replace
+            target_label: __metrics_path__
+            regex: (.+)
+
+          # 3. Replace the default port with prometheus.io/port annotation.
+          #    Regex: take IP from __address__, port from annotation → combine as IP:port
+          - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+            action: replace
+            regex: '([^:]+)(?::\d+)?;(\d+)'
+            replacement: '$1:$2'
+            target_label: __address__
+
+          # 4. Carry pod labels into Prometheus labels (e.g. app=temperature-proxy-api)
+          - action: labelmap
+            regex: __meta_kubernetes_pod_label_(.+)
+
+          # 5. Add namespace + pod name as labels for easier filtering in Grafana
+          - source_labels: [__meta_kubernetes_namespace]
+            action: replace
+            target_label: namespace
+          - source_labels: [__meta_kubernetes_pod_name]
+            action: replace
+            target_label: pod
+
+      # ── Prometheus self-monitoring ───────────────────────────────────────────
+      - job_name: prometheus
+        static_configs:
+          - targets: [localhost:9090]

@@ -1,0 +1,94 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '2.2.21'
+    id 'org.jetbrains.kotlin.plugin.spring' version '2.2.21'
+    id 'org.springframework.boot' version '4.0.3'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id 'groovy'
+    id 'info.solidsoft.pitest' version '1.19.0-rc.2' // the only version that works with Gradle 8+
+}
+
+group = 'com'
+version = '0.0.1-SNAPSHOT'
+description = 'temperature-proxy-api'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+repositories {
+    mavenCentral()
+    gradlePluginPortal()
+}
+
+dependencies {
+    implementation(
+            'org.springframework.boot:spring-boot-starter-web',
+            'org.springframework.boot:spring-boot-starter-actuator',
+            'org.springframework.boot:spring-boot-starter-validation',
+
+            'org.jetbrains.kotlin:kotlin-reflect',
+
+            'com.github.ben-manes.caffeine:caffeine',
+
+            'io.micrometer:micrometer-registry-prometheus',
+
+            'io.micrometer:micrometer-tracing-bridge-otel',
+            'io.opentelemetry:opentelemetry-exporter-otlp',
+
+            'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6',
+
+            'org.projectlombok:lombok',
+    )
+    testImplementation(
+            'org.springframework.boot:spring-boot-starter-test',
+            'org.jetbrains.kotlin:kotlin-test-junit5',
+
+            'org.apache.groovy:groovy:4.0.30',
+            'org.apache.groovy:groovy-json:4.0.30',
+            'org.spockframework:spock-core:2.4-groovy-4.0',
+            'org.spockframework:spock-spring:2.4-groovy-4.0',
+
+            'com.tngtech.archunit:archunit-junit5:1.4.0'
+    )
+    testImplementation('io.rest-assured:rest-assured:5.5.0') {
+        exclude group: 'org.apache.groovy'
+    }
+    testImplementation('io.rest-assured:spring-mock-mvc:5.5.0') {
+        exclude group: 'org.apache.groovy'
+    }
+    testRuntimeOnly(
+            'org.junit.platform:junit-platform-launcher'
+    )
+}
+
+sourceSets {
+    test {
+        groovy {
+            srcDirs = ['src/test/groovy']
+        }
+
+    }
+}
+
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.addAll '-Xjsr305=strict', '-Xannotation-default-target=param-property'
+    }
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+pitest {
+    pitestVersion = '1.22.0'
+    junit5PluginVersion = '1.2.3'
+    targetClasses = ['com.temperatureproxyapi.*']
+    targetTests = ['com.temperatureproxyapi.*']
+    excludedClasses = ['com.temperatureproxyapi.infra.config.*']
+    excludedClasses = ['com.temperatureproxyapi.infra.weather.client.OpenMeteoClient']
+    mutationThreshold = 65
+    outputFormats = ['XML', 'HTML']
+}

@@ -1,0 +1,6 @@
+apiVersion: v2
+name: temperature-proxy-api
+description: REST API proxy for current weather temperature with caching and full observability
+type: application
+version: 0.1.0
+appVersion: "0.0.1-SNAPSHOT"

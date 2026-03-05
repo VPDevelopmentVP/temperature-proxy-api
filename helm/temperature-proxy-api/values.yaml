@@ -1,0 +1,54 @@
+# ── Application ──────────────────────────────────────────────────────────────
+
+replicaCount: 2
+
+image:
+  repository: temperature-proxy-api
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+
+resources:
+  requests:
+    cpu: "100m"
+    memory: "256Mi"
+  limits:
+    cpu: "500m"
+    memory: "512Mi"
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+# ── App config (rendered into ConfigMap → mounted as env vars) ────────────────
+
+config:
+  weatherBaseUrl: "https://api.open-meteo.com"
+  weatherTimeoutMs: "1000"
+  weatherCacheTtlSeconds: "60"
+  weatherCacheMaxSize: "1000"
+  otelEndpoint: "http://jaeger-collector:4318/v1/traces"
+
+# ── Monitoring (Prometheus deployed inside the cluster) ───────────────────────
+
+monitoring:
+  enabled: true
+  namespace: monitoring
+
+  prometheus:
+    image: prom/prometheus:v3.2.1
+    scrapeInterval: 15s
+    retention: 7d
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "256Mi"
+      limits:
+        cpu: "500m"
+        memory: "512Mi"

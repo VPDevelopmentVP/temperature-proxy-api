@@ -1,0 +1,51 @@
+spring:
+  threads:
+    virtual:
+      enabled: true
+  application:
+    name: temperature-proxy-api
+  mvc:
+    servlet:
+      path: /api
+server:
+  port: 8080
+
+# ── Weather upstream ──────────────────────────────────────────────────────────
+weather:
+  upstream:
+    base-url: ${WEATHER_BASE_URL:https://api.open-meteo.com}
+    timeout-ms: ${WEATHER_TIMEOUT_MS:1000}
+  cache:
+    ttl-seconds: ${WEATHER_CACHE_TTL_SECONDS:60}
+    max-size: ${WEATHER_CACHE_MAX_SIZE:1000}
+
+# ── Actuator / Observability ──────────────────────────────────────────────────
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  tracing:
+    sampling:
+      probability: 1.0
+  otlp:
+    tracing:
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4318/v1/traces}
+
+# ── Swagger / OpenAPI ─────────────────────────────────────────────────────────
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+# ── Logging ───────────────────────────────────────────────────────────────────
+logging:
+  level:
+    com.temperatureproxyapi: INFO

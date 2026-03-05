@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "temperature-proxy-api.fullname" . }}
+  labels:
+    {{- include "temperature-proxy-api.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "temperature-proxy-api.selectorLabels" . | nindent 6 }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        {{- include "temperature-proxy-api.selectorLabels" . | nindent 8 }}
+      annotations:
+        # Prometheus reads these to decide whether and how to scrape this pod.
+        # The annotation-based scraping is configured in the Prometheus ConfigMap.
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        # spring.mvc.servlet.path=/api → actuator is served under /api/actuator/...
+        prometheus.io/path: "/api/actuator/prometheus"
+        # Force pod restart when the ConfigMap changes (hash of data section).
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: 8080
+              name: http
+          envFrom:
+            - configMapRef:
+                name: {{ include "temperature-proxy-api.fullname" . }}-config
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          livenessProbe:
+            httpGet:
+              path: /api/actuator/health/liveness
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /api/actuator/health/readiness
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 5
+            failureThreshold: 3
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - mountPath: /tmp
+              name: tmp-dir
+      volumes:
+        - name: tmp-dir
+          emptyDir: {}
