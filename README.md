@@ -50,15 +50,23 @@ Addressed
 ## Test results
 
 Docker-compose seems to deployment app and dependent resources correctly
+![Docker Compose Deployment](image/docker-compose-deployment.png)
 
 Helm deployment K8S resources correctly as well
+![k8s-deployment-and-port-forwarding.png](image/k8s-deployment-and-port-forwarding.png)
 
 API was hit and return the appropriate response
+![api-request-hit.png](image/api-request-hit.png)
 
 The application exposes Actuator as expected including:
 - the health check, which is required by Kubernetes to create a gree deployment
 - default Prometheus metrics
+![actuator.png](image/actuator.png)
 
+![prometheus-default-metrics.png](image/prometheus-default-metrics.png)
+
+PiTest report was also generated correctly counting "test coverage" and "mutation coverage"
+![pit-tests.png](image/pit-tests.png)
 
 ## What could be improved
 - [Development]   -> Assuming that our traffic will increase to millions of requests - we must replace Caffeine cache with Redis to use distributed cache
